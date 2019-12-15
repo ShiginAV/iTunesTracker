@@ -51,6 +51,32 @@ class MainViewController: UIViewController {
         tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
     }
+    
+    private func makeContextMenu() -> UIMenu {
+        let share = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+            print("Share")
+        }
+        
+        let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+            print("Delete")
+        }
+        
+        let moreMenu = UIMenu(title: "", options: .displayInline, children: [
+            UIAction(title: "More...", image: UIImage(systemName: "ellipsis.circle")) { _ in
+                print("More")
+            }
+        ])
+        
+        return UIMenu(title: "", image: nil, identifier: nil, options: [], children: [share, delete, moreMenu])
+    }
+    
+    private func makePhotoPreview() -> UITargetedPreview? {
+        //TODO: get index for selected cell
+        guard let indexPath = tableView.indexPathForSelectedRow else { return nil }
+        guard let cell = tableView.cellForRow(at: indexPath) as? TrackCell else { return nil }
+        let imagePreview = UITargetedPreview(view: cell.albumImageView)
+        return imagePreview
+    }
 }
 
 //MARK: - UITableViewDelegate+DataSource
@@ -61,7 +87,6 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TrackCell", for: indexPath) as! TrackCell
-        
         let track = trackList[indexPath.row]
         cell.setup(track)
         
@@ -72,6 +97,21 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
             }
         }
         return cell
+    }
+    
+    //Context Menu
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        
+        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            return self.makeContextMenu()
+        }
+        
+        return configuration
+    }
+    
+    func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        
+        return makePhotoPreview()
     }
 }
 
@@ -88,4 +128,3 @@ extension MainViewController: UISearchBarDelegate {
         }
     }
 }
-
